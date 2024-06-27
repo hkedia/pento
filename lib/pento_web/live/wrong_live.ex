@@ -1,14 +1,15 @@
 defmodule PentoWeb.WrongLive do
   use PentoWeb, :live_view
 
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     {:ok,
      assign(
        socket,
        score: 0,
        win_guess: Enum.random(1..10),
        message: "Make a guess:",
-       time: time()
+       time: time(),
+       session_id: session["live_socket_id"]
      )}
   end
 
@@ -21,7 +22,7 @@ defmodule PentoWeb.WrongLive do
       <%= @message %> It's <%= @time %>
     </h2>
     <br />
-    <h2>
+    <h2 class="mb-4">
       <.link
         :for={n <- 1..10}
         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded-m-1"
@@ -31,6 +32,10 @@ defmodule PentoWeb.WrongLive do
         <%= n %>
       </.link>
     </h2>
+    <pre>
+      <%= @current_user.email %>
+      <%= @session_id %>
+    </pre>
     """
   end
 
