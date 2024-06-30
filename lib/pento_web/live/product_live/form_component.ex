@@ -26,7 +26,20 @@ defmodule PentoWeb.ProductLive.FormComponent do
         <:actions>
           <.button phx-disable-with="Saving...">Save Product</.button>
         </:actions>
+        <div phx-drop-target={@uploads.image.ref}>
+          <.label>Image</.label>
+          <.live_file_input upload={@uploads.image} />
+        </div>
       </.simple_form>
+      <%= for image <- @uploads.image.entries do %>
+        <%= for err <- upload_errors(@uploads.image, image) do %>
+          <.error><%= err %></.error>
+        <% end %>
+        <div class="mt-4">
+          <.live_img_preview entry={image} width="60" />
+        </div>
+        <progress value={image.progress} max="100" />
+      <% end %>
     </div>
     """
   end
@@ -38,7 +51,13 @@ defmodule PentoWeb.ProductLive.FormComponent do
      |> assign(assigns)
      |> assign_new(:form, fn ->
        to_form(Catalog.change_product(product))
-     end)}
+     end)
+     |> allow_upload(:image,
+       accept: ~w(.jpg .jpeg .png),
+       max_extries: 1,
+       max_file_size: 9_000_000,
+       auto_upload: true
+     )}
   end
 
   @impl true
@@ -51,7 +70,9 @@ defmodule PentoWeb.ProductLive.FormComponent do
     save_product(socket, socket.assigns.action, product_params)
   end
 
-  defp save_product(socket, :edit, product_params) do
+  defp save_product(socket, :edit, params) do
+    product_params = params_with_image(socket, params)
+
     case Catalog.update_product(socket.assigns.product, product_params) do
       {:ok, product} ->
         notify_parent({:saved, product})
@@ -66,7 +87,9 @@ defmodule PentoWeb.ProductLive.FormComponent do
     end
   end
 
-  defp save_product(socket, :new, product_params) do
+  defp save_product(socket, :new, params) do
+    product_params = params_with_image(socket, params)
+
     case Catalog.create_product(product_params) do
       {:ok, product} ->
         notify_parent({:saved, product})
@@ -82,4 +105,22 @@ defmodule PentoWeb.ProductLive.FormComponent do
   end
 
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+
+  def params_with_image(socket, params) do
+    path =
+      socket
+      |> consume_uploaded_entries(:image, &upload_static_file/2)
+      |> List.first()
+
+    Map.put(params, "image_upload", path)
+  end
+
+  defp upload_static_file(%{path: path}, _entry) do
+    # Plug in your production image file persistence implementation here
+    filename = Path.basename(path)
+    dest = Path.join("priv/static/images", filename)
+    File.cp!(path, dest)
+
+    {:ok, ~p"/images/#{filename}"}
+  end
 end
