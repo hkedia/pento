@@ -2,7 +2,6 @@ defmodule PentoWeb.Admin.SurveyResultsLive do
   use PentoWeb, :live_component
   use PentoWeb, :chart_live
   alias Pento.Catalog
-  alias Contex.Plot
 
   def update(assigns, socket) do
     {:ok,
