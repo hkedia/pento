@@ -22,6 +22,7 @@ defmodule PentoWeb.GameLive.Component do
       fill={@fill}
       phx-click="pick"
       phx-target="#game"
+      phx-value-name={@name}
     />
     """
   end

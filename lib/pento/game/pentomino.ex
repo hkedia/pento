@@ -2,7 +2,7 @@ defmodule Pento.Game.Pentomino do
   alias Pento.Game.Point
   alias Pento.Game.Shape
 
-  @names [:i, :l, :y, :n, :p, :w, :u, :v, :s, :f, :x, :t]
+  # @names [:i, :l, :y, :n, :p, :w, :u, :v, :s, :f, :x, :t]
   @default_location {8, 8}
 
   defstruct name: :i,
